@@ -14,11 +14,17 @@
 
 **This is a pre-release plugin that is still undergoing development.**
 
-This document describes the functionality provided by the XL Release Telnet plugin. This plugin provides a way to run simple command sequences on a telnet server. At this point, its capabilites are quite unsophisicated.
+This is a 'See It Work' plugin, meaning it has been enhanced to include functionality that makes it easy to spin up and configure a dockerized version of the XebiaLabs platform with this plugin installed. Using the provided test data, you can then try out the plugin features. This is useful for familiarizing yourself with the plugin functionality, for demonstrations, testing and for further plugin development.
+
+This document describes the functionality provided by the XL Release Telnet plugin. 
   
 See the [XL Release reference manual](https://docs.xebialabs.com/xl-release) for background information on XL Release and release automation concepts.  
 
 ## Overview
+
+This plugin provides a way to run simple command sequences on a telnet server. At this point, its capabilites are quite unsophisicated.
+
+The plugin adds a new server type named 'Telnet Server'. Currently, there is a single new task type name 'Run Commands'.
 
 ## Requirements
 
@@ -27,9 +33,15 @@ See the [XL Release reference manual](https://docs.xebialabs.com/xl-release) for
 
 ## Installation
 
-* Copy the latest JAR file from the [releases page](https://github.com/xebialabs-community/xlr-telnet-plugin/releases) into the `XL_RELEASE_SERVER/plugins` directory.
+* Copy the latest JAR file from the [releases page](https://github.com/xebialabs-community/xlr-telnet-plugin/releases) into the `XL_RELEASE_SERVER/plugins/__local__` directory.
 * Restart the XL Release server.
 
-## Features/Usage/Types/Tasks
+## Usage
+
+### Configure the Telnet Server
+
+![AddServer](images/AddServer.png)
+
+Add a new Telnet Server on the Settings -> Shared Configration page.
 
 ## References
