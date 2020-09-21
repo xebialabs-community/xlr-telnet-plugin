@@ -1,0 +1,43 @@
+{
+  "busObId": "934ec7a1701c451ce57f2c43bfbbe2e46fe4843f81",
+  "busObPublicId": "37860",
+  "busObRecId": "944b878cf7da5ad9f7909c459eb5d7fb24ccbe1a26",
+  "fields": [
+    {
+      "dirty": true,
+      "displayName": "Requested By",
+      "fieldId": "93543f7fa541b6c5befc264642875724a8be1797d1",
+      "html": "string",
+      "name": "RequestedBy",
+      "value": "Me"
+    },
+    {
+      "dirty": true,
+      "displayName": "Title",
+      "fieldId": "9407d01580d0329f81f00b42bb9d680962dad97aba",
+      "html": "string",
+      "name": "Title",
+      "value": "Some Title"
+    },
+    {
+      "dirty": true,
+      "displayName": "Description",
+      "fieldId": "934fb3e2b82015e7ec07fa41098a9efcb20b1e49d6",
+      "html": "string",
+      "name": "Description",
+      "value": "Some Description"
+    },
+    {
+      "dirty": true,
+      "displayName": "Status",
+      "fieldId": "93543f5c71a782465c27994bba9bd8f1dece6dded8",
+      "html": "string",
+      "name": "Status",
+      "value": "Draft"
+    }
+  ],
+  "errorCode": null,
+  "errorMessage": null,
+  "hasError": false,
+  "httpStatusCode": "Continue"
+}

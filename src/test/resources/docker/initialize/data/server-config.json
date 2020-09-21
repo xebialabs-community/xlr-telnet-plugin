@@ -1,0 +1,8 @@
+
+ {
+    "id": "Configuration/Custom/telnet",
+    "type":"telnet.Server",
+    "title":"Telnet Server - wunderground",
+    "telnetHost":"rainmaker.wunderground.com",
+    "telnetPort":3000
+}

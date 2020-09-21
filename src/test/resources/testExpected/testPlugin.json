@@ -1,0 +1,14 @@
+{
+        "${descriptionValue}": "myDescription",
+        "${createdBORecId}": "944b878cf7da5ad9f7909c459eb5d7fb24ccbe1a26",
+        "${getBOPubId}": "37860",
+        "${updatedBORecId}": "944b878cf7da5ad9f7909c459eb5d7fb24ccbe1a26",
+        "${busObId}": "934ec7a1701c451ce57f2c43bfbbe2e46fe4843f81",
+        "${titleValue}": "myTitle",
+        "${finalRetreivedStatus}": "Scheduled",
+        "${updatedBOPublicId}": "37860",
+        "${createdBOPubId}": "37860",
+        "${getBOFields}": "{'RequestedBy': 'Me', 'Status': 'Scheduled', 'Title': 'Some Title', 'Description': 'Some Description'}",
+        "${requestedByValue}": "myRequestedBy",
+        "${getTeams}": "{'team1': 'team one', 'team2': 'team two'}"
+}

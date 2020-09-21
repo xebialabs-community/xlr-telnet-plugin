@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright 2020 XEBIALABS
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+-->
+
+<synthetic xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns="http://www.xebialabs.com/deployit/synthetic"
+           xsi:schemaLocation="http://www.xebialabs.com/deployit/synthetic synthetic.xsd">
+
+    <type type="telnet.Server" extends="xlrelease.Configuration">
+        <property name="telnetHost" category="input" kind="string" required="true" description="Telnet Host String, i.e. 'servername.domainname.com'" />
+        <property name="telnetPort" category="input" kind="integer" required="true"/>
+        <property name="timeout" kind="integer" category="Authentication" default="20" />
+        <property name="username" required="false" category="Authentication"/>
+        <property name="password" password="true" required="false" label="Password" category="Authentication" />
+        <property name="loginSteps" required="false" kind="map_string_string" category="Authentication" description="The commands will be processed in the order they are entered into the map. Don't edit entries in place because that will change the order, re-enter all entries instead. The key is a character string that will uniquely indentify the tail of the telnet prompt. Trailing spaces (if any) at the end of the prompt are significant, so be sure to include them. The value is the command string. Be sure to end with the 'return control characters' such as \r\n or \n. If the username or password is part of the command, use the literal string |$username| or |$password| and the telnet plugin will substitute the actual value." />
+
+        <property name="scriptLocation" hidden="true" default="telnet/connection_check.py"/>
+  </type>
+
+    <type type="telnet.PythonScript" extends="xlrelease.PythonScript" virtual="true">
+        <property name="scriptLocation" default="telnet/telnet_task.py" hidden="true"/>
+        <!--<property name="iconLocation" default="images/logo.png" hidden="true"/>-->
+        <property name="telnetServer" category="input" label="Server" referenced-type="telnet.Server" kind="ci"/>
+        <property name="telnetUsername" required="false" category="input"/>
+        <property name="telnetPassword" password="true" required="false" label="Password" category="input" />
+    </type>
+
+    <type type="telnet.RunCommands" extends="telnet.PythonScript">
+        <property name="commandSteps" category="input" kind="map_string_string" description="The commands will be processed in the order they are entered into the map. Don't edit entries in place because that will change the order, re-enter all entries instead. The key is a character string that will uniquely indentify the tail of the telnet prompt. Trailing spaces (if any) at the end of the prompt are significant, so be sure to include them. The value is the command string. Be sure to end with the 'return control characters' such as \r\n or \n" />
+        <property name="exitCommand" category="input" kind="string" description="For example 'X\r\n'"/>
+        <property name="returnedString" category="output" kind="string" description="The final string returned by the telnet server after all commands are issued" />
+    </type>
+
+</synthetic>

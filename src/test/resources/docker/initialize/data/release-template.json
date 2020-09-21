@@ -1,0 +1,133 @@
+[{
+  "id": "Applications/Releasee612690445694e4c897b54ca3f4c1700",
+  "type": "xlrelease.Release",
+  "title": "Telnet Test",
+  "scheduledStartDate": "2020-09-17T14:00:00Z",
+  "flagStatus": "OK",
+  "overdueNotified": false,
+  "maxConcurrentReleases": 100,
+  "releaseTriggers": [],
+  "teams": [
+    {
+      "id": "Applications/Releasee612690445694e4c897b54ca3f4c1700/Teamcb15e87640e1484e904fb571d10de1dd",
+      "type": "xlrelease.Team",
+      "teamName": "Template Owner",
+      "members": [
+        "admin"
+      ],
+      "roles": [],
+      "permissions": [
+        "template#edit",
+        "template#lock_task",
+        "template#view",
+        "template#edit_triggers",
+        "template#edit_precondition",
+        "template#edit_security",
+        "template#create_release",
+        "template#edit_failure_handler"
+      ]
+    },
+    {
+      "id": "Applications/Releasee612690445694e4c897b54ca3f4c1700/Teamc5b96dd3a543446fb3fa44bf4d8283ef",
+      "type": "xlrelease.Team",
+      "teamName": "Release Admin",
+      "members": [],
+      "roles": [],
+      "permissions": [
+        "release#edit_precondition",
+        "release#edit",
+        "release#reassign_task",
+        "release#edit_security",
+        "release#view",
+        "release#lock_task",
+        "release#start",
+        "release#edit_blackout",
+        "template#view",
+        "release#edit_failure_handler",
+        "release#abort",
+        "release#edit_task"
+      ]
+    }
+  ],
+  "memberViewers": [],
+  "roleViewers": [],
+  "attachments": [],
+  "phases": [
+    {
+      "id": "Applications/Releasee612690445694e4c897b54ca3f4c1700/Phase5bdc756f1bd94952b6cee2e31ff6cada",
+      "type": "xlrelease.Phase",
+      "title": "New Phase",
+      "flagStatus": "OK",
+      "overdueNotified": false,
+      "tasks": [
+        {
+          "id": "Applications/Releasee612690445694e4c897b54ca3f4c1700/Phase5bdc756f1bd94952b6cee2e31ff6cada/Taskc3a442280b444a16a7e88582720d29a3",
+          "type": "xlrelease.CustomScriptTask",
+          "title": "Run Commands",
+          "flagStatus": "OK",
+          "overdueNotified": false,
+          "comments": [],
+          "container": "Applications/Releasee612690445694e4c897b54ca3f4c1700/Phase5bdc756f1bd94952b6cee2e31ff6cada",
+          "facets": [],
+          "attachments": [],
+          "status": "PLANNED",
+          "waitForScheduledStartDate": true,
+          "delayDuringBlackout": false,
+          "postponedDueToBlackout": false,
+          "hasBeenFlagged": false,
+          "hasBeenDelayed": false,
+          "taskFailureHandlerEnabled": false,
+          "failuresCount": 0,
+          "variableMapping": {
+            "pythonScript.returnedString": "${Result}"
+          },
+          "tags": [],
+          "dueSoonNotified": false,
+          "locked": false,
+          "checkAttributes": false,
+          "watchers": [],
+          "pythonScript": {
+            "id": "Applications/Releasee612690445694e4c897b54ca3f4c1700/Phase5bdc756f1bd94952b6cee2e31ff6cada/Taskc3a442280b444a16a7e88582720d29a3/PythonScript",
+            "type": "telnet.RunCommands",
+            "customScriptTask": "Applications/Releasee612690445694e4c897b54ca3f4c1700/Phase5bdc756f1bd94952b6cee2e31ff6cada/Taskc3a442280b444a16a7e88582720d29a3",
+            "telnetServer": "Configuration/Custom/Telnet Server - wunderground",
+            "commandSteps": {
+              "Press Return to continue:": "\\r\\n",
+              "city code-- ": "nyc\\r\\n"
+            },
+            "exitCommand": "X\\r\\n"
+          },
+          "keepPreviousOutputPropertiesOnRetry": false
+        }
+      ],
+      "release": "Applications/Releasee612690445694e4c897b54ca3f4c1700",
+      "status": "PLANNED"
+    }
+  ],
+  "queryableStartDate": "2020-09-17T14:00:00Z",
+  "realFlagStatus": "OK",
+  "status": "TEMPLATE",
+  "tags": [],
+  "variables": [
+    {
+      "id": "Applications/Releasee612690445694e4c897b54ca3f4c1700/Variable2380e0de68b24c6d96e13a8c564c5c44",
+      "type": "xlrelease.StringVariable",
+      "key": "Result",
+      "requiresValue": false,
+      "showOnReleaseStart": false,
+      "inherited": false
+    }
+  ],
+  "calendarPublished": false,
+  "tutorial": false,
+  "abortOnFailure": false,
+  "allowConcurrentReleasesFromTrigger": true,
+  "runningTriggeredReleasesCount": 0,
+  "createdFromTrigger": false,
+  "extensions": [],
+  "autoStart": false,
+  "automatedResumeCount": 0,
+  "riskScore": "000",
+  "totalRiskScore": "0000",
+  "riskProfile": "Configuration/riskProfiles/Default risk profile"
+}]
