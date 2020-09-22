@@ -9,7 +9,7 @@
 #
 
 xlr:
-  image: xebialabs/xl-release:9.0
+  image: xebialabs/xl-release:9.7
   container_name: xlr
   volumes:
   #  - ~/xl-licenses/xl-release-license.lic:/opt/xebialabs/xl-release-server/conf/xl-release-license.lic
