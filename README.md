@@ -72,11 +72,6 @@ To configure the server:
 
 ![ConfigureRunCommands](images/ConfigureRunCommands.png)
 
-XXXX### Example - Running commands against the publicly available wunderground weather serverXXX
-
-XXXXXThis server does not require a login:
-
-
 ### To run demo or dev version (set up docker container for XLR and then import configuration)
 
 Download this github project to a local directory.
