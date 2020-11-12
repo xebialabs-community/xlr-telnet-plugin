@@ -43,6 +43,18 @@ class TelnetConnection(object):
         logger.debug("in telnet connection static create_connection")
         return TelnetConnection(telnetServer, username, password)
 
+    def testConnection(self, variables):
+        logger.debug("in testConnection - About to connect")
+        try :
+            telnet_connection = telnetlib.Telnet(self.host, self.port, self.timeout)
+        except:
+            msg = "Telnet connection failed"
+            logger.debug(msg)
+            print(msg)
+            sys.exit(1)
+        telnet_connection.close()
+        return True
+
     def telnet_runcommands(self, variables):
         logger.debug("in runcommands - About to connect")
         try :

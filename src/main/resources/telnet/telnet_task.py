@@ -9,7 +9,6 @@
 #
 
 import logging
-import getpass
 import sys
 import telnetlib
 

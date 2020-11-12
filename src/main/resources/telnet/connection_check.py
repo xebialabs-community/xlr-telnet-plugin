@@ -21,7 +21,16 @@
 #ispw_client.test_connection_client.get_version(path)
 
 import logging
+import sys
+import telnetlib
+
+from telnet.TelnetConnection import TelnetConnection
 
 logger = logging.getLogger(__name__)
 
 logger.debug("In connection_check")
+params = {'telnetHost': configuration.telnetHost, 'telnetPort':configuration.telnetPort, 'username': configuration.username, 'password': configuration.password,
+          'timeout': configuration.timeout, 'loginSteps': configuration.loginSteps}
+
+telnet_connection = TelnetConnection.create_connection(params)
+connectionSuccess = telnet_connection.testConnection(params)
