@@ -9,6 +9,8 @@
 #
 
 import logging
+import logging.handlers
+from logging.handlers import RotatingFileHandler
 import os
 
 LOG_FILENAME = 'log/telnet-plugin.log'
