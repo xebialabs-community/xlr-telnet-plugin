@@ -1,4 +1,4 @@
-# XL Release Telnet Plugin v0.1.0
+# XL Release Telnet Plugin
 
 [![Build Status][xlr-telnet-plugin-travis-image]][xlr-telnet-plugin-travis-url]
 [![License: MIT][xlr-telnet-plugin-license-image]][xlr-telnet-plugin-license-url]
