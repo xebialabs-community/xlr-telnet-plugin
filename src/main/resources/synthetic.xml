@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright 2020 XEBIALABS
+    Copyright 2021 XEBIALABS
 
     Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
@@ -21,7 +21,9 @@
         <property name="timeout" kind="integer" category="Authentication" default="20" />
         <property name="username" required="false" category="Authentication"/>
         <property name="password" password="true" required="false" label="Password" category="Authentication" />
-        <property name="loginSteps" required="false" kind="map_string_string" category="Authentication" description="The commands will be processed in the order they are entered into the map. Don't edit entries in place because that will change the order, re-enter all entries instead. The key is a character string that will uniquely indentify the tail of the telnet prompt. Trailing spaces (if any) at the end of the prompt are significant, so be sure to include them. The value is the command string. Be sure to end with the 'return control characters' such as \r\n or \n. If the username or password is part of the command, use the literal string |$username| or |$password| and the telnet plugin will substitute the actual value." />
+        <property name="separatorString" category="Authentication" kind="string" default="{|}" description="Character or Charaters you will use to separate the prompt and command in the 'Login Steps' and 'Exit Command Steps' multi-line variable. If there is no prompt to look for, simple enter the command on that line."/>
+        <property name="loginStepsList" size="large" required="false" kind="string" category="Authentication" description="This is a multiline entry. Create a line for each Prompt/Command pair. Place your separator string between the Prompt and Command. The plugin will look for the Telnet Prompt and then enter the Command. You need only configure the end (tail) of the Prompt but trailing spaces (if any) at the end of the Prompt are significant, so be sure to include them. Be sure to end each Command with the 'return control characters' such as \r\n or \n. If the username or password is part of the Prompt or Command, use the literal string |$username| or |$password| and the telnet plugin will substitute the actual value. Example line - Return to continue:{|}\r\n" />
+        <property name="exitCommandsList" size="large" kind="string" category="Authentication" description="This is a multiline entry. Create a line for each Prompt/Command pair. Place your separator string between the Prompt and Command. The plugin will look for the Telnet Prompt and then enter the Command. You need only configure the end (tail) of the Prompt but trailing spaces (if any) at the end of the Prompt are significant, so be sure to include them. Be sure to end each Command with the 'return control characters' such as \r\n or \n. If the username or password is part of the Prompt or Command, use the literal string |$username| or |$password| and the telnet plugin will substitute the actual value. Example line - Return to continue:{|}\r\n" />
 
         <property name="scriptLocation" hidden="true" default="telnet/connection_check.py"/>
   </type>
@@ -35,8 +37,9 @@
     </type>
 
     <type type="telnet.RunCommands" extends="telnet.PythonScript">
-        <property name="commandSteps" category="input" kind="map_string_string" description="The commands will be processed in the order they are entered into the map. Don't edit entries in place because that will change the order, re-enter all entries instead. The key is a character string that will uniquely indentify the tail of the telnet prompt. Trailing spaces (if any) at the end of the prompt are significant, so be sure to include them. The value is the command string. Be sure to end with the 'return control characters' such as \r\n or \n" />
-        <property name="exitCommand" category="input" kind="string" description="For example 'X\r\n'"/>
+        <property name="separatorString" category="input" kind="string" default="{|}" description="Character or charaters you will use to separate the prompt and command in the 'Command Steps' multi-line variable."/>
+        <property name="commandStepsList" size="large" label="Command Steps" category="input" kind="string" description="This is a multiline entry. Create a line for each Prompt/Command pair. Place your separator string between the Prompt and Command. The plugin will look for the Telnet Prompt and then enter the Command. You need only configure the end (tail) of the Prompt but trailing spaces (if any) at the end of the Prompt are significant, so be sure to include them. Be sure to end each Command with the 'return control characters' such as \r\n or \n. If the username or password is part of the Prompt or Command, use the literal string |$username| or |$password| and the telnet plugin will substitute the actual value. Example line - Return to continue:{|}\r\n" />
+        
         <property name="returnedString" category="output" kind="string" description="The final string returned by the telnet server after all commands are issued" />
     </type>
 

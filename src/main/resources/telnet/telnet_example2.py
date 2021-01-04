@@ -1,5 +1,5 @@
 #
-# Copyright 2020 XEBIALABS
+# Copyright 2021 XEBIALABS
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 #
@@ -17,7 +17,7 @@ class TELNET2(object):
         self.tn = None
         self.username = "root"
         self.password = "12345678"
-        self.host = "rainmaker.wunderground.comxxx"
+        self.host = "rainmaker.wunderground.com"
         self.port = 3000
         self.timeout = 5
         self.login_prompt = b"login: "
@@ -32,7 +32,7 @@ class TELNET2(object):
 
         try:
             print("About to try")
-            output = self.tn.read_until("Press Return to continue:XXX", self.timeout)
+            output = self.tn.read_until("Press Return to continue:", self.timeout)
             print("Succeeded")
         except:
             print("TELNET.connect() socket.timeout")

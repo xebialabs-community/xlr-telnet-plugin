@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 XEBIALABS
+ * Copyright 2021 XEBIALABS
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
  *
@@ -74,7 +74,11 @@ public final class TelnetTest
 
         try
         {
-            telnet.connect("rainmaker.wunderground.com", 3000);
+            //telnet.connect("scn.org", 23);
+            //telnet.connect("192.104.1.4", 23);
+            //telnet.connect("rainmaker.wunderground.com", 3000);
+            //telnet.connect("towel.blinkenlights.nl", 23);
+            telnet.connect("telehack.com", 23);
         }
         catch (IOException e)
         {

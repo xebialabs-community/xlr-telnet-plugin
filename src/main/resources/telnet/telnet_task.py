@@ -1,5 +1,5 @@
 #
-# Copyright 2020 XEBIALABS
+# Copyright 2021 XEBIALABS
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 #
@@ -25,7 +25,6 @@ logger.debug("In telnet_task")
 print("in task, about to create connection")
 print("telnetServer host = %s" % (telnetServer['telnetHost']))
 print("telnetUsername = %s" % (telnetUsername))
-print("telnetPassword = %s" % (telnetPassword))
 telnet_connection = TelnetConnection.create_connection(telnetServer, telnetUsername, telnetPassword)
 method = str(task.getTaskType()).lower().replace('.', '_')
 call = getattr(telnet_connection, method)

@@ -1,133 +1,147 @@
-[{
-  "id": "Applications/Releasee612690445694e4c897b54ca3f4c1700",
-  "type": "xlrelease.Release",
-  "title": "Telnet Test",
-  "scheduledStartDate": "2020-09-17T14:00:00Z",
-  "flagStatus": "OK",
-  "overdueNotified": false,
-  "maxConcurrentReleases": 100,
-  "releaseTriggers": [],
-  "teams": [
-    {
-      "id": "Applications/Releasee612690445694e4c897b54ca3f4c1700/Teamcb15e87640e1484e904fb571d10de1dd",
-      "type": "xlrelease.Team",
-      "teamName": "Template Owner",
-      "members": [
-        "admin"
-      ],
-      "roles": [],
-      "permissions": [
-        "template#edit",
-        "template#lock_task",
-        "template#view",
-        "template#edit_triggers",
-        "template#edit_precondition",
-        "template#edit_security",
-        "template#create_release",
-        "template#edit_failure_handler"
-      ]
-    },
-    {
-      "id": "Applications/Releasee612690445694e4c897b54ca3f4c1700/Teamc5b96dd3a543446fb3fa44bf4d8283ef",
-      "type": "xlrelease.Team",
-      "teamName": "Release Admin",
-      "members": [],
-      "roles": [],
-      "permissions": [
-        "release#edit_precondition",
-        "release#edit",
-        "release#reassign_task",
-        "release#edit_security",
-        "release#view",
-        "release#lock_task",
-        "release#start",
-        "release#edit_blackout",
-        "template#view",
-        "release#edit_failure_handler",
-        "release#abort",
-        "release#edit_task"
-      ]
-    }
-  ],
-  "memberViewers": [],
-  "roleViewers": [],
-  "attachments": [],
-  "phases": [
-    {
-      "id": "Applications/Releasee612690445694e4c897b54ca3f4c1700/Phase5bdc756f1bd94952b6cee2e31ff6cada",
-      "type": "xlrelease.Phase",
-      "title": "New Phase",
-      "flagStatus": "OK",
-      "overdueNotified": false,
-      "tasks": [
-        {
-          "id": "Applications/Releasee612690445694e4c897b54ca3f4c1700/Phase5bdc756f1bd94952b6cee2e31ff6cada/Taskc3a442280b444a16a7e88582720d29a3",
-          "type": "xlrelease.CustomScriptTask",
-          "title": "Run Commands",
-          "flagStatus": "OK",
-          "overdueNotified": false,
-          "comments": [],
-          "container": "Applications/Releasee612690445694e4c897b54ca3f4c1700/Phase5bdc756f1bd94952b6cee2e31ff6cada",
-          "facets": [],
-          "attachments": [],
-          "status": "PLANNED",
-          "waitForScheduledStartDate": true,
-          "delayDuringBlackout": false,
-          "postponedDueToBlackout": false,
-          "hasBeenFlagged": false,
-          "hasBeenDelayed": false,
-          "taskFailureHandlerEnabled": false,
-          "failuresCount": 0,
-          "variableMapping": {
-            "pythonScript.returnedString": "${Result}"
-          },
-          "tags": [],
-          "dueSoonNotified": false,
-          "locked": false,
-          "checkAttributes": false,
-          "watchers": [],
-          "pythonScript": {
-            "id": "Applications/Releasee612690445694e4c897b54ca3f4c1700/Phase5bdc756f1bd94952b6cee2e31ff6cada/Taskc3a442280b444a16a7e88582720d29a3/PythonScript",
-            "type": "telnet.RunCommands",
-            "customScriptTask": "Applications/Releasee612690445694e4c897b54ca3f4c1700/Phase5bdc756f1bd94952b6cee2e31ff6cada/Taskc3a442280b444a16a7e88582720d29a3",
-            "telnetServer": "Configuration/Custom/Telnet Server - wunderground",
-            "commandSteps": {
-              "Press Return to continue:": "\\r\\n",
-              "city code-- ": "nyc\\r\\n"
+[
+  {
+    "id": "Applications/Release67fef447c6ef4e40b6eef533ab356db9",
+    "type": "xlrelease.Release",
+    "title": "TelnetTest",
+    "scheduledStartDate": "2020-12-30T15:00:00Z",
+    "flagStatus": "OK",
+    "overdueNotified": false,
+    "maxConcurrentReleases": 100,
+    "releaseTriggers": [],
+    "teams": [
+      {
+        "id": "Applications/Release67fef447c6ef4e40b6eef533ab356db9/Teamc3e158263e83457e8a92a8776938b091",
+        "type": "xlrelease.Team",
+        "teamName": "Template Owner",
+        "members": [
+          "admin"
+        ],
+        "roles": [],
+        "permissions": [
+          "template#edit",
+          "template#lock_task",
+          "template#view",
+          "template#edit_triggers",
+          "template#edit_precondition",
+          "template#edit_security",
+          "template#create_release",
+          "template#edit_failure_handler"
+        ]
+      },
+      {
+        "id": "Applications/Release67fef447c6ef4e40b6eef533ab356db9/Team1642501192724ec4b4edfa83196c889a",
+        "type": "xlrelease.Team",
+        "teamName": "Release Admin",
+        "members": [],
+        "roles": [],
+        "permissions": [
+          "release#edit_precondition",
+          "release#edit",
+          "release#task_transition",
+          "release#edit_task_attachments",
+          "trigger#view_trigger",
+          "release#reassign_task",
+          "release#edit_task_input_output_properties",
+          "release#edit_task_tags",
+          "release#edit_security",
+          "release#edit_task_description",
+          "trigger#edit_trigger",
+          "release#view",
+          "release#lock_task",
+          "release#start",
+          "release#edit_blackout",
+          "template#view",
+          "release#edit_failure_handler",
+          "release#abort",
+          "release#edit_task_script",
+          "release#edit_task_configuration_facet",
+          "release#edit_task_flag",
+          "release#edit_task_dates",
+          "release#edit_task"
+        ]
+      }
+    ],
+    "memberViewers": [],
+    "roleViewers": [],
+    "attachments": [],
+    "phases": [
+      {
+        "id": "Applications/Release67fef447c6ef4e40b6eef533ab356db9/Phase6b99b17ec11c4a6590deb8129750840b",
+        "type": "xlrelease.Phase",
+        "title": "New Phase",
+        "flagStatus": "OK",
+        "overdueNotified": false,
+        "tasks": [
+          {
+            "id": "Applications/Release67fef447c6ef4e40b6eef533ab356db9/Phase6b99b17ec11c4a6590deb8129750840b/Task779092585a1d4640a4a8971d8c53cee7",
+            "type": "xlrelease.CustomScriptTask",
+            "title": "Run Commands",
+            "flagStatus": "OK",
+            "overdueNotified": false,
+            "comments": [],
+            "container": "Applications/Release67fef447c6ef4e40b6eef533ab356db9/Phase6b99b17ec11c4a6590deb8129750840b",
+            "facets": [],
+            "attachments": [],
+            "status": "PLANNED",
+            "watchers": [],
+            "waitForScheduledStartDate": true,
+            "delayDuringBlackout": false,
+            "postponedDueToBlackout": false,
+            "postponedUntilEnvironmentsAreReserved": false,
+            "hasBeenFlagged": false,
+            "hasBeenDelayed": false,
+            "taskFailureHandlerEnabled": false,
+            "failuresCount": 0,
+            "variableMapping": {
+              "pythonScript.returnedString": "${ResultString}"
             },
-            "exitCommand": "X\\r\\n"
-          },
-          "keepPreviousOutputPropertiesOnRetry": false
-        }
-      ],
-      "release": "Applications/Releasee612690445694e4c897b54ca3f4c1700",
-      "status": "PLANNED"
-    }
-  ],
-  "queryableStartDate": "2020-09-17T14:00:00Z",
-  "realFlagStatus": "OK",
-  "status": "TEMPLATE",
-  "tags": [],
-  "variables": [
-    {
-      "id": "Applications/Releasee612690445694e4c897b54ca3f4c1700/Variable2380e0de68b24c6d96e13a8c564c5c44",
-      "type": "xlrelease.StringVariable",
-      "key": "Result",
-      "requiresValue": false,
-      "showOnReleaseStart": false,
-      "inherited": false
-    }
-  ],
-  "calendarPublished": false,
-  "tutorial": false,
-  "abortOnFailure": false,
-  "allowConcurrentReleasesFromTrigger": true,
-  "runningTriggeredReleasesCount": 0,
-  "createdFromTrigger": false,
-  "extensions": [],
-  "autoStart": false,
-  "automatedResumeCount": 0,
-  "riskScore": "000",
-  "totalRiskScore": "0000",
-  "riskProfile": "Configuration/riskProfiles/Default risk profile"
-}]
+            "externalVariableMapping": {},
+            "tags": [],
+            "dueSoonNotified": false,
+            "locked": false,
+            "checkAttributes": false,
+            "pythonScript": {
+              "id": "Applications/Release67fef447c6ef4e40b6eef533ab356db9/Phase6b99b17ec11c4a6590deb8129750840b/Task779092585a1d4640a4a8971d8c53cee7/PythonScript",
+              "type": "telnet.RunCommands",
+              "customScriptTask": "Applications/Release67fef447c6ef4e40b6eef533ab356db9/Phase6b99b17ec11c4a6590deb8129750840b/Task779092585a1d4640a4a8971d8c53cee7",
+              "telnetServer": "Configuration/Custom/Telnet Server - wunderground",
+              "separatorString": "{|}",
+              "commandStepsList": "Press Return to continue:{|}\\r\\n\ncity code-- {|}nyc\\r\\n"
+            },
+            "keepPreviousOutputPropertiesOnRetry": false
+          }
+        ],
+        "release": "Applications/Release67fef447c6ef4e40b6eef533ab356db9",
+        "status": "PLANNED"
+      }
+    ],
+    "queryableStartDate": "2020-12-30T15:00:00Z",
+    "realFlagStatus": "OK",
+    "status": "TEMPLATE",
+    "tags": [],
+    "variables": [
+      {
+        "id": "Applications/Release67fef447c6ef4e40b6eef533ab356db9/Variable2f3a5b81968845d6ae5c6158478bad29",
+        "type": "xlrelease.StringVariable",
+        "key": "ResultString",
+        "requiresValue": false,
+        "showOnReleaseStart": false,
+        "inherited": false,
+        "multiline": false
+      }
+    ],
+    "calendarPublished": false,
+    "tutorial": false,
+    "abortOnFailure": false,
+    "allowPasswordsInAllFields": false,
+    "allowConcurrentReleasesFromTrigger": true,
+    "runningTriggeredReleasesCount": 0,
+    "createdFromTrigger": false,
+    "extensions": [],
+    "autoStart": false,
+    "automatedResumeCount": 0,
+    "riskScore": "000",
+    "totalRiskScore": "0000",
+    "riskProfile": "Configuration/riskProfiles/Default risk profile"
+  }
+]
