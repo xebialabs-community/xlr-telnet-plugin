@@ -105,8 +105,8 @@
               "type": "telnet.RunCommands",
               "customScriptTask": "Applications/Release67fef447c6ef4e40b6eef533ab356db9/Phase6b99b17ec11c4a6590deb8129750840b/Task779092585a1d4640a4a8971d8c53cee7",
               "telnetServer": "Configuration/Custom/Telnet Server - wunderground",
-              "separatorString": "{|}",
-              "commandStepsList": "Press Return to continue:{|}\\r\\n\ncity code-- {|}nyc\\r\\n"
+              "separatorString": "[@]",
+              "commandStepsList": "Press Return to continue:[@]\\r\\n\ncity code-- [@]nyc\\r\\n"
             },
             "keepPreviousOutputPropertiesOnRetry": false
           }

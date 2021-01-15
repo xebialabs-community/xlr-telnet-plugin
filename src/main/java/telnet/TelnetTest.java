@@ -82,6 +82,7 @@ public final class TelnetTest
         }
         catch (IOException e)
         {
+            System.out.println("Caught io exception while connected");
             e.printStackTrace();
             System.exit(1);
         }
@@ -91,10 +92,12 @@ public final class TelnetTest
 
         try
         {
+            System.out.println("About to disconnect");
             telnet.disconnect();
         }
         catch (IOException e)
         {
+            System.out.println("Caught io exception while trying to disconnect");
             e.printStackTrace();
             System.exit(1);
         }

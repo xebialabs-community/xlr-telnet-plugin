@@ -55,7 +55,7 @@ To configure the server:
    1. The commands will be processed in the order they are entered into the map. Don't edit entries in place because that will change the order, re-enter all entries instead.
    2. The Key is a character string that will uniquely identify the tail of the telnet prompt. Trailing spaces, if any, are significant, so be sure to include them.
    3. The value is the command string. Be sure to end the command with the 'return control characters' such as \r\n or \n.
-   4. If the username or password is part of the command, use the literal string |$username| or |$password| and the telnet plugin will subsitute the actual value. 
+   4. If the username or password is part of the command, use the literal string [$username] or [$password] and the telnet plugin will subsitute the actual value. 
 
 ![ConfigureTheServer](images/ConfigureTheServer.png)
 

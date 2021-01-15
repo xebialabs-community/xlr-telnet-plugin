@@ -20,11 +20,27 @@ curl --user admin:admin -i -X POST http://localhost:15516/api/v1/config \
   -H "Content-Type: application/json" -H "Accept: application/json" \
   --data "@"$SCRIPTPATH"/data/server-config.json"
 
+curl --user admin:admin -i -X POST http://localhost:15516/api/v1/config \
+  -H "Content-Type: application/json" -H "Accept: application/json" \
+  --data "@"$SCRIPTPATH"/data/server-config2.json"
+
+curl --user admin:admin -i -X POST http://localhost:15516/api/v1/config \
+  -H "Content-Type: application/json" -H "Accept: application/json" \
+  --data "@"$SCRIPTPATH"/data/server-config3.json"
+
 ########### LOAD XLR TEMPLATE
 
 curl --user admin:admin -i -X POST http://localhost:15516/api/v1/templates/import \
     -H "Content-Type: application/json" -H "Accept: application/json" \
     --data "@"$SCRIPTPATH"/data/release-template.json"
+
+curl --user admin:admin -i -X POST http://localhost:15516/api/v1/templates/import \
+    -H "Content-Type: application/json" -H "Accept: application/json" \
+    --data "@"$SCRIPTPATH"/data/release-template2.json"
+
+curl --user admin:admin -i -X POST http://localhost:15516/api/v1/templates/import \
+    -H "Content-Type: application/json" -H "Accept: application/json" \
+    --data "@"$SCRIPTPATH"/data/release-template3.json"
 
 
 

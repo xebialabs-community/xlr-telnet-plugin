@@ -112,19 +112,25 @@ class TELNET3(object):
 
         try:
             print("About to try")
-            output = self.read_expect(b"forever.")
+            output = self.read_expect("forever.\r\n.".encode('ascii'))
+            #output = self.read_expect("\r\n.".encode('ascii'))
             print("Succeeded- output = %s" % output)
-            output = self.read_expect(b".")
-            print("Succeeded- output = %s" % output)
+            output = self.read_expect("\r\n\r\n.".encode('ascii'))
+            print("Succeeded2- output = %s" % output)
+            # ABOVE is working correctly
+            #output = self.read_expect(".".encode('ascii'))
+            #print("Succeeded- output = %s" % output)
             print("About to write")
-            didWrite = self.write(b"date\r\n")
+            didWrite = self.write("date\r\n".encode('ascii'))
             print("didWrite = %s, date\r\n" % didWrite)
-            theDate = self.read_expect(b"CST")
-            output = self.read_expect(".")
-            print("Succeed - %s" % output)
+            # ABOVE IS WORKING
+            theDate = self.read_expect("\r\n".encode('ascii'))
+            #theDate = self.read_expect(".".encode('ascii'))
+            #output = self.read_expect(".")
+            #print("Succeed - %s" % output)
             #didWrite = self.write(b"nyc\r\n")
             #print("didWrite1 = %s, nyc\r\n" % didWrite)
-            return theDate
+            return True
         except Exception, e:
             print("Exception thrown, %s" % str(e))
             sys.exit(1)
@@ -141,13 +147,18 @@ class TELNET3(object):
     def read_expect(self, value):
         print("About to read_expect prompt -> %s" % value)
         indexOfMatch, matchedText, output = self.tn.expect([value], self.timeout)
+        print("########### - 'Looking for value and Begin Output in HEX")
+        print("What we are looking for in HEX = %s, The output Converted to Hex = %s" % (binascii.hexlify(value), binascii.hexlify(output)))
+        print("########### - End Output in HEX")
         if indexOfMatch == -1:
             # We could not find requested text
             msg = ("Unable to find match for key = %s, output text = %s " % (value, output))
             print(msg)
             sys.exit(1)
         else:
-            print("OUTPUT - %s" % output)
+            print("SUCCESSFUL FIND")
+            print("The Match was %s and now in hex - %s" % (matchedText.group() , binascii.hexlify(matchedText.group())))
+            print("The output was - %s" % output)
             return output
 
 
@@ -155,7 +166,16 @@ class TELNET3(object):
         try :
             readAll = self.tn.read_all()
             print("READALL = %s" % readAll)
-            return self.tn.read_all().decode('ascii')
+            return readAll.decode('ascii')
+        except socket.timeout :
+            print("read_all socket.timeout")
+            return False
+
+    def read_eager(self):
+        try :
+            readEager = self.tn.read_eager()
+            print("READEAGER = %s" % readEager)
+            return readEager.decode('ascii')
         except socket.timeout :
             print("read_all socket.timeout")
             return False
@@ -167,15 +187,18 @@ class TELNET3(object):
 
     def request(self,msg):
         self.__init__()
-        theData = self.connect()
-        print("Finished Connect, the data is %s" % theData)
-        #resp = self.read_all()
+        self.connect()
+        print("Finished Connect")
+        resp = self.read_eager()
+        print("The resp before exit was: %s" % resp)
+        print("The resp before exit in HEX was: %s" % binascii.hexlify(resp))
         if self.write(msg) == True :
             print("in True")
-            #self.close()
-            #resp = self.read_all()
-            print("About to close")
+            theData = resp
             self.close()
+            
+            #print("About to close")
+            #self.close()
             return theData
         else :
             return False

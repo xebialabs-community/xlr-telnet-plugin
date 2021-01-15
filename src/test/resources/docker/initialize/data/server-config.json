@@ -5,6 +5,6 @@
     "title":"Telnet Server - wunderground",
     "telnetHost":"rainmaker.wunderground.com",
     "telnetPort":3000,
-    "separatorString":"{|}",
-    "exitCommandsList":"X\\r\\n"
+    "separatorString":"[@]",
+    "exitCommandsList":"[@]X\\r\\n"
 }

@@ -33,6 +33,7 @@ class TelnetConnection(object):
         self.port = telnetServer['telnetPort']
         self.serverSeparator = telnetServer['separatorString']
         self.loginStepsList = telnetServer['loginStepsList']
+        self.logoutStepsList = telnetServer['logoutStepsList']
         self.exitCommandsList = telnetServer['exitCommandsList']
         self.username = telnetServer['username']
         self.password = telnetServer['password']
@@ -63,7 +64,10 @@ class TelnetConnection(object):
         return True
 
     def telnet_runcommands(self, variables):
+        capturedFinalOutput = "There was no output"
+        stepsSuccessful = True
         logger.debug("in runcommands - About to connect")
+        ########### CONNECT ################
         try :
             telnet_connection = telnetlib.Telnet(self.host, self.port, self.timeout)
         except:
@@ -72,28 +76,82 @@ class TelnetConnection(object):
             print(msg)
             sys.exit(1)
         
-        # login here, if necessary
+        ########### LOGIN, IF NECESSARY ################
         if self.username is not None:
             logging.debug("Found username - %s , so will log in" % (self.username))
-            # TODO: bail out if there are no loginsteps
-            self.processSteps(telnet_connection, self.loginStepsList, self.serverSeparator)
-            logger.debug("finished login")
+            capturedFinalOutput = self.login(telnet_connection)
+            logger.debug("finished login, success")
 
+        ########### RUN COMMANDS ################
         logger.debug("starting cmd loop")
-        self.processSteps(telnet_connection, variables["commandStepsList"], variables["separatorString"])
+        capturedFinalOutput, stepsSuccessful = self.processSteps(telnet_connection, variables["commandStepsList"], variables["separatorString"])
+        if not stepsSuccessful:
+            logger.debug("Run Command Steps Failed, capturedFinalOutput = %s" % capturedFinalOutput)
+            output = self.closeout(telnet_connection)
+            logger.debug("finished exit command loop")
+            msg = "Run command steps failed"
+            logger.debug(msg)
+            print(msg)
+            sys.exit(1)
         logger.debug("finished task loop")
-        logger.debug("About to process the exit command list")
-        self.processSteps(telnet_connection, self.exitCommandsList, self.serverSeparator)
+        
+        ########### LOGOUT and CLOSEOUT ################
+        logger.debug("About to closeout after successful telnet_runcommands, about to logout (if necessary) and closeout")
+        if self.username is not None:
+            logging.debug("Found username - %s , so will logout" % (self.username))
+            capturedFinalOutput, logoutSuccessful = self.logout(telnet_connection)
+            logger.debug("finished logout, capturedFinalOutput = %s, was logout successful = %s" % (capturedFinalOutput, logoutSuccessful))
+        output = self.closeout(telnet_connection)
         logger.debug("finished exit command loop")
-        #exitCmd, containsPassword = self.processString(variables["exitCommand"].encode("ascii"))
-        #logger.debug("The exit string (encoded and processed) -> %s" % (exitCmd))
-        #logger.debug("The exit string (hexified) -> %s " % (binascii.hexlify(exitCmd)))
-        #telnet_connection.write(exitCmd)
-        logger.debug("about to read final string")
-        output = telnet_connection.read_all()
-        telnet_connection.close()
-        logger.debug("The returned string was %s" % (output))
+        logger.debug("The returned string from read_all after closeout was %s" % (output))
         variables["returnedString"] = output
+        logger.debug("The CapturedFinalOutput = %s" % capturedFinalOutput)
+
+    def login(self, telnet_connection):
+        logger.debug("In login")
+        # Bail out if incorrectly configured, close the connection
+        if self.loginStepsList is None:
+            logger.debug("Username configured but there are no Login Steps")
+            output = self.closeout(telnet_connection)
+            logger.debug("finished exit command loop, output from closeout was %s" % output)
+            msg = "There is a username configured for this Telnet Server, but there are no Login Steps"
+            logger.debug(msg)
+            print(msg)
+            sys.exit(1)
+        capturedFinalOutput, stepsSuccessful = self.processSteps(telnet_connection, self.loginStepsList, self.serverSeparator)
+        # Bail out if login fails, close the connection
+        if not stepsSuccessful:
+            logger.debug("Login Failed, capturedFinalOutput = %s" % capturedFinalOutput)
+            # We could not login so there is no need to logout - go directly to closeout
+            output = self.closeout(telnet_connection)
+            logger.debug("finished exit command loop, output from closeout was %s" % output)
+            msg = "Login failed"
+            logger.debug(msg)
+            print(msg)
+            sys.exit(1)
+        #Successful login
+        return capturedFinalOutput
+
+    def logout(self, telnet_connection):
+        logger.debug("In logout")
+        capturedFinalOutput = ""
+        stepsSuccessful = True
+        if self.logoutStepsList is not None:
+            capturedFinalOutput, stepsSuccessful = self.processSteps(telnet_connection, self.logoutStepsList, self.serverSeparator)
+        # We will continue even if logout was unsuccessful or there were no logout steps
+        return capturedFinalOutput, stepsSuccessful
+
+    def closeout(self, telnet_connection):
+        logger.debug("In closeout")
+        capturedFinalOutput, stepsSuccessful = self.processSteps(telnet_connection, self.exitCommandsList, self.serverSeparator)
+        logger.debug("Result from running exit commands - capturedFinalOutput = %s, stepSuccessful = %s" % (capturedFinalOutput, stepsSuccessful))
+        logger.debug("about to run read_all")
+        output = telnet_connection.read_all()
+        logger.debug("Output from read_all = %s" % output)
+        telnet_connection.close()
+        return output
+
+
 
     def processSteps(self, telnet_connection, strOfSteps, separator):
         logger.debug("In processSteps, strOfSteps is %s" % strOfSteps)
@@ -112,9 +170,8 @@ class TelnetConnection(object):
                 newCommand.command = splitLineList[1]
             else:
                 newCommand.command = splitLineList[0]
-            
             listOfCommands.append(newCommand)
-        
+        finalOutput = ""
         for commandObj in listOfCommands:
             logger.debug("\n\n*********************** BEGING PROCESSING commandObj ******************************")
             logger.debug("prompt = %s" % commandObj.prompt)
@@ -131,43 +188,28 @@ class TelnetConnection(object):
             logger.debug("About to read_expect prompt -> %s" % procPrompt)
 
             indexOfMatch, matchedText, output = telnet_connection.expect([procPrompt], self.timeout)
-        
+            logger.debug("##### begin - DEBUGING ATTEMPT TO MATCH #######")
+            logger.debug("Value we are trying to match = %s", procPrompt)
+            logger.debug("indexOfMatch = %d, output = %s" % (indexOfMatch, output) )
+            #if matchedText is not 'None':
+                #logger.debug("The matchedText is %s" % matchedText.group())
+            logger.debug("Value we were looking for -> displayed in HEX = %s" % binascii.hexlify(procPrompt))
+            logger.debug("Output we were searching through -> displayed in HEX = %s" % binascii.hexlify(output))
+            logger.debug("##### end - DEBUGING ATTEMPT TO MATCH #######")
+            finalOutput = output
             if indexOfMatch == -1:
                 # We could not find requested text
-                msg = ("Unable to find match for key = %s, output text = %s " % (procPrompt, output))
+                msg = ("Unable to find match for key = %s, This was the actual output %s" % (procPrompt, finalOutput))
                 logger.debug(msg)
                 print(msg)
-                sys.exit(1)
-
-            logger.debug("Output = %s" % output)
+                # Return False so calling code can bail out
+                return finalOutput, False
+            # Write command
             logger.debug("About to write value -> %s" % procCommand)
             telnet_connection.write(procCommand)
             logger.debug("\n*********************** END PROCESSING commandObj ******************************")
+        return finalOutput, True
         
-        '''for key, value in map.iteritems():
-                # encode the strings
-                key = key.encode('ascii')
-                value = value.encode('ascii')
-                self.debugKeyValue(key, value, False)
-                # process the strings to correct XLR escaping behavior
-                procKey, keyContainsPassword = self.processString(key)
-                procValue, valueContainsPassword = self.processString(value)
-                self.debugKeyValue(procKey, procValue, True, keyContainsPassword, valueContainsPassword)
-                
-                logger.debug("About to read_until key -> %s" % procKey)
-
-                indexOfMatch, matchedText, output = telnet_connection.expect([procKey], self.timeout)
-            
-                if indexOfMatch == -1:
-                    # We could not find requested text
-                    msg = ("Unable to find match for key = %s, output text = %s " % (procKey, output))
-                    logger.debug(msg)
-                    print(msg)
-                    sys.exit(1)
-
-                logger.debug("Output = %s" % output)
-                logger.debug("About to write value -> %s" % procValue)
-                telnet_connection.write(procValue)'''
 
     def processString(self, theStr):
         # We don't want debuging to print out the password
@@ -180,11 +222,11 @@ class TelnetConnection(object):
         # This processString method corrects the problem 
         newstr = theStr.replace('\\r', b'\r').replace('\\n', b'\n')
         logger.debug("newstr after first process %s" % newstr)
-        # if the string contains the literal string |$username| or |$password|, replace with actual username and password
-        if '|$username|' in newstr:
-            newstr = newstr.replace('|$username|', self.username.encode('ascii'))
-        if '|$password|' in newstr:
-            newstr = newstr.replace('|$password|', self.password.encode('ascii'))
+        # if the string contains the literal string [$username] or [$password], replace with actual username and password
+        if '[$username]' in newstr:
+            newstr = newstr.replace('[$username]', self.username.encode('ascii'))
+        if '[$password]' in newstr:
+            newstr = newstr.replace('[$password]', self.password.encode('ascii'))
             containsPassword = True
         return newstr, containsPassword
 

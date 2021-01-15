@@ -88,6 +88,7 @@ public final class IOUtil
                          }
                          catch (IOException e)
                          {
+                             System.out.println("Caught io exception Util.copyStream");
                              e.printStackTrace();
                              System.exit(1);
                          }
