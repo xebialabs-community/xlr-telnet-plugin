@@ -26,15 +26,13 @@ class CommandObject():
 
 class TelnetConnection(object):
     def __init__(self, telnetServer, telnetUsername=None, telnetPassword=None):
-        logger.debug("in telnet connection init")
+        logger.debug("In telnet connection init")
         if telnetServer is None:
-            msg = "Telnet Server is not configured for this task"
+            msg = "Please choose a Telnet Server for this task"
             logger.debug(msg)
             print(msg)
             sys.exit(1)
         self.telnetServer = telnetServer
-        logger.debug("The server username is %s" % telnetServer['username'])
-        logger.debug("The telnetUsername is  %s" % telnetUsername)
         self.host = telnetServer['telnetHost']
         self.port = telnetServer['telnetPort']
         self.serverSeparator = telnetServer['separatorString']
@@ -58,7 +56,6 @@ class TelnetConnection(object):
         return TelnetConnection(telnetServer, username, password)
 
     def testConnection(self, variables):
-        logger.debug("in testConnection - About to connect")
         try :
             telnet_connection = telnetlib.Telnet(self.host, self.port, self.timeout)
         except:
@@ -73,7 +70,7 @@ class TelnetConnection(object):
         logger.debug("\n\n\n$$$$$$$$$$$$$$$$ BEGIN RUN COMMANDS $$$$$$$$$$$$$$$$")
         capturedFinalOutput = ""
         stepsSuccessful = True
-        logger.debug("in runcommands - About to connect")
+        logger.debug("About to connect")
         ########### CONNECT ################
         try :
             telnet_connection = telnetlib.Telnet(self.host, self.port, self.timeout)
@@ -88,10 +85,10 @@ class TelnetConnection(object):
         if self.username is not None:
             logging.debug("Found username - %s , so will log in" % (self.username))
             capturedFinalOutput = self.login(telnet_connection)
-            logger.debug("finished login, success")
+            logger.debug("Finished login, success")
 
         ########### RUN COMMANDS ################
-        logger.debug("starting cmd loop")
+        logger.debug("Starting running command steps")
         capturedFinalOutput, stepsSuccessful = self.processSteps(telnet_connection, variables["commandStepsList"], variables["separatorString"])
         if not stepsSuccessful:
             logger.debug("Run Command Steps Failed, capturedFinalOutput = %s" % capturedFinalOutput)
@@ -101,27 +98,27 @@ class TelnetConnection(object):
             logger.debug(msg)
             print(msg)
             sys.exit(1)
-        logger.debug("finished task loop")
+        logger.debug("Finished running command steps")
         
         ########### LOGOUT and CLOSEOUT ################
         logger.debug("About to closeout after successful telnet_runcommands, about to logout (if necessary) and closeout")
         if self.username is not None:
             logging.debug("Found username - %s , so will logout" % (self.username))
             logoutOutput, logoutSuccessful = self.logout(telnet_connection)
-            logger.debug("finished logout, logoutOutput = %s, was logout successful = %s" % (logoutOutput, logoutSuccessful))
+            logger.debug("Finished logout, logoutOutput = %s, was logout successful = %s" % (logoutOutput, logoutSuccessful))
         capturedFinalOutput, output = self.closeout(telnet_connection)
-        logger.debug("finished exit command loop")
+        logger.debug("Finished exit command loop")
         logger.debug("The CapturedFinalOutput = %s" % capturedFinalOutput)
         logger.debug("The returned string from read_all after closeout = %s" % (output))
         # Trim output strings
         if capturedFinalOutput is not None:
             capturedFinalOutput = capturedFinalOutput.strip()
-            logger.debug("After strip - capturedFinalOutput = %s" % capturedFinalOutput)
+            logger.debug("After removing starting and trailing empty spaces - capturedFinalOutput = %s" % capturedFinalOutput)
         else:
             capturedFinalOutput = ""
         if output is not None:
             output = output.strip()
-            logger.debug("After strip - output = %s" % output)
+            logger.debug("After removing starting and trailing empty spaces - output = %s" % output)
         else:
             output = ""
 
@@ -151,10 +148,10 @@ class TelnetConnection(object):
         logger.debug("In login")
         # Bail out if incorrectly configured, close the connection
         if self.loginStepsList is None:
-            logger.debug("Username configured but there are no Login Steps")
+            logger.debug("Username configured but Login Steps have not been configured")
             capturedFinalOutput, output = self.closeout(telnet_connection)
             logger.debug("finished exit command loop, output from closeout was %s" % output)
-            msg = "There is a username configured for this Telnet Server, but there are no Login Steps"
+            msg = "There is a username configured for this Telnet Server, but Login Steps have not been configured"
             logger.debug(msg)
             print(msg)
             sys.exit(1)
@@ -187,7 +184,7 @@ class TelnetConnection(object):
         logger.debug("Result from running exit commands - capturedFinalOutput = %s, stepSuccessful = %s" % (capturedFinalOutput, stepsSuccessful))
         logger.debug("about to run read_all")
         output = ""
-        # In some cases where a command is run but no output is produced, read_all times out. 
+        # In some cases, where a command is run but no output is produced, read_all times out. 
         # We will ignore the failure and instead depend upon the failIfEmptyExitOutput and failIfEmptyFinalString task configuration 
         #  (handled by caller) to determine success or failure.
         try :
@@ -271,9 +268,9 @@ class TelnetConnection(object):
         # We don't want debuging to print out the password
         containsPassword = False
         logger.debug("In processString, processing %s" % theStr)
-        # When XLR saves values into a map of String, String - special characters are escaped
+        # When XLR saves string values backslash characters are escaped
         # When the user wishes to use non printable control charater,such as carriage return followed by new line, 
-        #   they enter \r\n in the XLR task map. XLR then escapes the backslash, thereby changing the string from contol charaters to 
+        #   they enter \r\n in the list of strings. XLR then escapes the backslash, thereby changing the string from contol charaters to 
         #   literal backslashes follow by an alpha character - in hex 5c725c6e is saved rather than the control characters 0d0a
         # This processString method corrects the problem 
         newstr = theStr.replace('\\r', b'\r').replace('\\n', b'\n')

@@ -18,10 +18,6 @@ logger = logging.getLogger(__name__)
 
 logger.debug("In telnet_task")
 
-#ispw_client = ISPWClientUtil.create_ispw_client(ispwServiceServer, cesToken)
-#method = str(task.getTaskType()).lower().replace('.', '_')
-#call = getattr(ispw_client, method)
-#output = call(locals())
 print("in task, about to create connection")
 print("telnetServer host = %s" % (telnetServer['telnetHost']))
 print("telnetUsername = %s" % (telnetUsername))
