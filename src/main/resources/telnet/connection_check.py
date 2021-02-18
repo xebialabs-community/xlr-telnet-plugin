@@ -19,7 +19,10 @@ logger = logging.getLogger(__name__)
 
 logger.debug("In connection_check, note that we check only that we can connect to the telnet server. We do not test logging in and logging out.")
 params = {'telnetHost': configuration.telnetHost, 'telnetPort':configuration.telnetPort, 'username': configuration.username, 'password': configuration.password,
-          'timeout': configuration.timeout, 'separatorString': configuration.separatorString, 'loginStepsList': configuration.loginStepsList, 'logoutStepsList': configuration.logoutStepsList, 'exitCommandsList': configuration.exitCommandsList }
+          'timeout': configuration.timeout, 'separatorString': configuration.separatorString, 'loginStepsList': configuration.loginStepsList,
+          'concurrentLoginIndicator': configuration.concurrentLoginIndicator, 'numberOfLoginRetries': configuration.numberOfLoginRetries,
+          'intervalBetweenLoginRetries': configuration.intervalBetweenLoginRetries, 'concurrentLoginStepsList': configuration.concurrentLoginStepsList, 
+          'logoutStepsList': configuration.logoutStepsList, 'exitCommandsList': configuration.exitCommandsList }
 
 telnet_connection = TelnetConnection.create_connection(params)
 connectionSuccess = telnet_connection.testConnection(params)

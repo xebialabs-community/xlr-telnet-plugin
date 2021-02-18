@@ -16,7 +16,7 @@ repositories {
   }
 }
 
-version = "1.0.0"
+version = "1.5.0"
 
 if (!project.hasProperty('release.scope')) {
   project.ext['release.scope'] = 'patch'
