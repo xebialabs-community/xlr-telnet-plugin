@@ -15,10 +15,14 @@ import telnetlib
 import binascii
 import socket
 import time
+from TelnetUtils import debugPromptCommand
+from TelnetUtils import checkForErrorCondition
 
 logger = logging.getLogger(__name__)
 
 logger.debug("In TelnetConnection")
+
+errorStateList = ["NO_CONNECTION", "NOT_LOGGED_IN", "CONCURRENT_LOGIN", "ERROR_AFTER_LOGIN", "FAILED_FINAL_TEST"]
 
 class CommandObject():
     def __init__(self, prompt="", command=""):
@@ -38,6 +42,7 @@ class TelnetConnection(object):
         self.port = telnetServer['telnetPort']
         self.serverSeparator = telnetServer['separatorString']
         self.loginStepsList = telnetServer['loginStepsList']
+        self.loginErrorIndicatorList = telnetServer['loginErrorIndicatorList']
         self.concurrentLoginIndicator = telnetServer['concurrentLoginIndicator']
         self.numberOfLoginRetries = telnetServer['numberOfLoginRetries']
         self.intervalBetweenLoginRetries = telnetServer['intervalBetweenLoginRetries']
@@ -47,15 +52,11 @@ class TelnetConnection(object):
         self.username = telnetServer['username']
         self.password = telnetServer['password']
         self.timeout = telnetServer['timeout']
-        self.concurrentLoginIndicatorList = None
         
         if telnetUsername is not None:
             self.username = telnetUsername
         if telnetPassword is not None:
             self.password = telnetPassword
-
-        if self.concurrentLoginIndicator is not None:
-            self.concurrentLoginIndicatorList = [self.concurrentLoginIndicator]
 
         
 
@@ -65,13 +66,13 @@ class TelnetConnection(object):
         return TelnetConnection(telnetServer, username, password)
 
     def testConnection(self, variables):
+        telnet_connection = None
         try :
             telnet_connection = telnetlib.Telnet(self.host, self.port, self.timeout)
         except:
             msg = "Telnet connection failed"
-            logger.debug(msg)
-            print(msg)
-            sys.exit(1)
+            self.errorOut(telnet_connection, msg, "NO_CONNECTION")
+        # success
         telnet_connection.close()
         return True
 
@@ -79,15 +80,18 @@ class TelnetConnection(object):
         logger.debug("\n\n\n$$$$$$$$$$$$$$$$ BEGIN RUN COMMANDS $$$$$$$$$$$$$$$$")
         capturedFinalOutput = ""
         stepsSuccessful = True
+        errorConditionFound = False
+        concurrentLoginFound = False
+        errorMsg = "No error found"
+        
         logger.debug("About to connect")
         ########### CONNECT ################
+        telnet_connection = None
         try :
             telnet_connection = telnetlib.Telnet(self.host, self.port, self.timeout)
         except:
             msg = "Telnet connection failed"
-            logger.debug(msg)
-            print(msg)
-            sys.exit(1)
+            self.errorOut(telnet_connection, msg, "NO_CONNECTION")
         
         ########### LOGIN, IF NECESSARY ################
         logger.debug("self.username is %s" % self.username)
@@ -101,41 +105,33 @@ class TelnetConnection(object):
         errorConditionList = []
         if variables["errorConditionIndicatorList"] is not None:
             errorConditionList = variables["errorConditionIndicatorList"].splitlines()
-        capturedFinalOutput, stepsSuccessful, errorConditionFound, errorMsg = self.processSteps(telnet_connection, variables["commandStepsList"], variables["separatorString"], errorConditionList)
+        
+        capturedFinalOutput, stepsSuccessful, errorConditionFound, concurrentLoginFound, errorMsg = self.processSteps(telnet_connection, variables["commandStepsList"], variables["separatorString"], errorConditionList)
         if errorConditionFound:
-            logger.debug("Error Condition Found, capturedFinalOutput = %s" % capturedFinalOutput)
+            logger.debug("Run command steps failed, error condition discovered")
             if self.username is not None:
-                logging.debug("Found username - %s , so will logout" % (self.username))
-                logoutOutput, logoutSuccessful = self.logout(telnet_connection)
-                logger.debug("Finished logout, logoutOutput = %s, was logout successful = %s" % (logoutOutput, logoutSuccessful))
-            capturedFinalOutput, output = self.closeout(telnet_connection)
-            logger.debug("finished exit command loop")
-            msg = "Run command steps failed, error condition discovered"
-            logger.debug(msg)
-            print(msg)
-            sys.exit(1)
+                logging.debug("Found username")
+                self.errorOut(telnet_connection, msg, "ERROR_AFTER_LOGIN")  
+            else:
+                self.errorOut(telnet_connection, msg, "NOT_LOGGED_IN")
+
         if not stepsSuccessful:
             logger.debug("Run Command Steps Failed, capturedFinalOutput = %s" % capturedFinalOutput)
             if self.username is not None:
-                logging.debug("Found username - %s , so will logout" % (self.username))
-                logoutOutput, logoutSuccessful = self.logout(telnet_connection)
-                logger.debug("Finished logout, logoutOutput = %s, was logout successful = %s" % (logoutOutput, logoutSuccessful))
-            capturedFinalOutput, output = self.closeout(telnet_connection)
-            logger.debug("finished exit command loop")
-            msg = "Run command steps failed"
-            logger.debug(msg)
-            print(msg)
-            sys.exit(1)
-        # Success
+                logging.debug("Found username")
+                self.errorOut(telnet_connection, msg, "ERROR_AFTER_LOGIN")  
+            else:
+                self.errorOut(telnet_connection, msg, "NOT_LOGGED_IN")
+        # Success so far, so continure
         logger.debug("Finished running command steps")
         
         ########### LOGOUT and CLOSEOUT ################
         logger.debug("About to closeout after successful telnet_runcommands, about to logout (if necessary) and closeout")
         if self.username is not None:
             logging.debug("Found username - %s , so will logout" % (self.username))
-            logoutOutput, logoutSuccessful = self.logout(telnet_connection)
+            logoutOutput, logoutSuccessful = self.logout(telnet_connection, errorConditionList)
             logger.debug("Finished logout, logoutOutput = %s, was logout successful = %s" % (logoutOutput, logoutSuccessful))
-        capturedFinalOutput, output = self.closeout(telnet_connection)
+        capturedFinalOutput, output = self.closeout(telnet_connection, errorConditionList)
         logger.debug("Finished exit command loop")
         logger.debug("The CapturedFinalOutput = %s" % capturedFinalOutput)
         logger.debug("The returned string from read_all after closeout = %s" % (output))
@@ -152,30 +148,25 @@ class TelnetConnection(object):
             output = ""
 
         # Test for error Condition based upon configured errorConditionIndicatorList (errorConditionList)
-        errorConditionFound, errorMsg = self.checkForErrorCondition(capturedFinalOutput, errorConditionList)
+        # We have already logged and closed out, If we find an error here, we will fail the task 
+        errorConditionFound, concurrentLoginFound, errorMsg = checkForErrorCondition(capturedFinalOutput, errorConditionList, None)
         if errorConditionFound:
-            logger.debug(errorMsg)
-            sys.exit(1)
-        errorConditionFound, errorMsg = self.checkForErrorCondition(output, errorConditionList)
+            self.errorOut(telnet_connection, errorMsg, "NO_CONNECTION")
+        errorConditionFound, concurrentLoginFound, errorMsg = checkForErrorCondition(output, errorConditionList, None)
         if errorConditionFound:
-            logger.debug(errorMsg)
-            sys.exit(1)
+            self.errorOut(telnet_connection, errorMsg, "NO_CONNECTION")
 
         # Test for failure condition based upon configured failIfEmptyLastOutput and failIfEmptyFinalString
         if variables["failIfEmptyExitOutput"]:
             logger.debug("Testing exitOutput because we must have a value, capturedFinalOutput = %s" % capturedFinalOutput)
             if len(capturedFinalOutput) == 0:
-                msg = "Last Output was empty, will fail the task"
-                logger.debug(msg)
-                print(msg)
-                sys.exit(1)
+                errorMsg = "Last Output was empty, will fail the task"
+                self.errorOut(telnet_connection, errorMsg, "NO_CONNECTION")
         if variables["failIfEmptyFinalString"]:
             logger.debug("Testing returnedString/ final output because we must have a value, output = %s" % output)
             if len(output) == 0:
-                msg = "Final Output was empty, will fail the task"
-                logger.debug(msg)
-                print(msg)
-                sys.exit(1)
+                errorMsg = "Final Output was empty, will fail the task"
+                self.errorOut(telnet_connection, errorMsg, "NO_CONNECTION")
 
         ########### SUCCESS ################
         variables["exitOutput"] = capturedFinalOutput
@@ -186,79 +177,84 @@ class TelnetConnection(object):
 ############# Login, Logout, Closeout Methods ##################
     def login(self, telnet_connection):
         logger.debug("In login")
+        loginErrorList = []
+        if self.loginErrorIndicatorList is not None:
+            loginErrorList = self.loginErrorIndicatorList.splitlines()
         loginRetryCounter = 0
         # Bail out if incorrectly configured, close the connection
         if self.loginStepsList is None:
-            logger.debug("Username configured but Login Steps have not been configured")
-            capturedFinalOutput, output = self.closeout(telnet_connection)
-            logger.debug("finished exit command loop, output from closeout was %s" % output)
-            msg = "There is a username configured for this Telnet Server, but Login Steps have not been configured"
-            logger.debug(msg)
-            print(msg)
-            sys.exit(1)
-        capturedFinalOutput, stepsSuccessful, errorConditionFound, errorMsg = self.processSteps(telnet_connection, 
-                self.loginStepsList, self.serverSeparator, self.concurrentLoginIndicatorList)
+            errorMsg = "There is a username configured for this Telnet Server, but Login Steps have not been configured"
+            self.errorOut(telnet_connection, errorMsg, "NOT_LOGGED_IN")
+
+        capturedFinalOutput, stepsSuccessful, errorConditionFound, concurrentLoginFound, errorMsg = self.processSteps(telnet_connection, 
+                self.loginStepsList, self.serverSeparator, loginErrorList, self.concurrentLoginIndicator)
+
+        if errorConditionFound:
+            # login error string found
+            self.errorOut(telnet_connection, errorMsg, "NOT_LOGGED_IN")
         
         # Testing for Concurrent Login condition
-        # if errorConditionFound - this means a concurrent login was discovered 
-        #       so - while still errorConditionFound and numberOfLoginRetries > 0, run the concurrentLoginStepsList steps
+        # if concurrentLoginFound - this means a concurrent login was discovered 
+        #       so - while still concurrentLoginFound and numberOfLoginRetries > 0, run the concurrentLoginStepsList steps
+        # 
 
         # ensure there are concurrentLoginSteps
-        if errorConditionFound and self.concurrentLoginStepsList is None:
-            msg = "Concurrent Login Condition discovered but Concurrent Login Steps have not been configured"
-            logger.debug(msg)
-            logoutOutput, logoutSuccessful = self.logout(telnet_connection)
-            logger.debug("Finished logout, logoutOutput = %s, was logout successful = %s" % (logoutOutput, logoutSuccessful))
-            capturedFinalOutput, output = self.closeout(telnet_connection)
-            logger.debug("finished exit command loop, output from closeout was %s" % output)
-            print(msg)
-            sys.exit(1)
+        if concurrentLoginFound and self.concurrentLoginStepsList is None:
+            errorMsg = errorMsg + " Concurrent Login Condition discovered but Concurrent Login Steps have not been configured"
+            self.errorOut(telnet_connection, errorMsg, "CONCURRENT_LOGIN")
 
-        while errorConditionFound and loginRetryCounter < self.numberOfLoginRetries:
+        while concurrentLoginFound and loginRetryCounter < self.numberOfLoginRetries:
             logger.debug(("Found concurrent login condition, will try again - errorMsg = %s, loginRetryCounter = %d" % (errorMsg, loginRetryCounter))) 
             pollingInterval = int(self.intervalBetweenLoginRetries)
             time.sleep(pollingInterval)
             # try logging in again but use retry login steps
-            capturedFinalOutput, stepsSuccessful, errorConditionFound, errorMsg = self.processSteps(telnet_connection, 
-                self.concurrentLoginStepsList, self.serverSeparator, self.concurrentLoginIndicatorList)
+            capturedFinalOutput, stepsSuccessful, errorConditionFound, concurrentLoginFound, errorMsg = self.processSteps(telnet_connection, 
+                self.concurrentLoginStepsList, self.serverSeparator, loginErrorList, self.concurrentLoginIndicator)
             loginRetryCounter += 1
         # If we still have a concurrent login error but have exhausted retries, we need to logout and close out then exit
-        if loginRetryCounter >= self.numberOfLoginRetries and errorConditionFound:
-            msg = "Concurrent Login condition discovered and retries have exceeded the configured limit."
-            logger.debug(msg)
-            # logout and closeout
-            logoutOutput, logoutSuccessful = self.logout(telnet_connection)
-            logger.debug("Finished logout, logoutOutput = %s, was logout successful = %s" % (logoutOutput, logoutSuccessful))
-            capturedFinalOutput, output = self.closeout(telnet_connection)
-            logger.debug("Finished exit command loop")
-            print(msg)
-            sys.exit(1)
+        if loginRetryCounter >= self.numberOfLoginRetries and concurrentLoginFound:
+            errorMsg = errorMsg + "Concurrent Login condition discovered and retries have exceeded the configured limit."
+            self.errorOut(telnet_connection, errorMsg, "CONCURRENT_LOGIN")
 
         # Bail out if login fails, close the connection
         if not stepsSuccessful:
             logger.debug("Login Failed, capturedFinalOutput = %s" % capturedFinalOutput)
-            # We could not login so there is no need to logout - go directly to closeout
-            capturedFinalOutput, output = self.closeout(telnet_connection)
-            logger.debug("finished exit command loop, output from closeout was %s" % output)
-            msg = "Login failed"
-            logger.debug(msg)
-            print(msg)
-            sys.exit(1)
+            errorMsg = "Login failed"
+            self.errorOut(telnet_connection, errorMsg, "NOT_LOGGED_IN")
+        
         #Successful login
         return capturedFinalOutput
 
-    def logout(self, telnet_connection):
+    def logout(self, telnet_connection, errorConditionList=None):
         logger.debug("In logout")
         capturedFinalOutput = ""
         stepsSuccessful = True
+        errorConditionFound = False
+        concurrentLoginFound = False
+        errorMsg = "No error found"
         if self.logoutStepsList is not None:
-            capturedFinalOutput, stepsSuccessful, errorConditionFound, errorMsg = self.processSteps(telnet_connection, self.logoutStepsList, self.serverSeparator)
-        # We will continue even if logout was unsuccessful or there were no logout steps
+            capturedFinalOutput, stepsSuccessful, errorConditionFound, concurrentLoginFound, errorMsg = self.processSteps(telnet_connection, 
+                self.logoutStepsList, self.serverSeparator, errorConditionList, None)
+        if errorConditionFound:
+            # If we detect a task error condition while logging out, we will error out (which will retry logout without looking for errors)
+            # This may be problematic because the logout steps may not be configured in a way that will work after we have already run some
+            # some logout steps. Better to configure the task steps to discover this error rather than have it discovered during logout
+            self.errorOut(telnet_connection, errorMsg, "ERROR_AFTER_LOGIN")
+        # We will check to see if logout was successful, we will just return to the caller so the next step (closeout) will run
         return capturedFinalOutput, stepsSuccessful
 
-    def closeout(self, telnet_connection):
+    def closeout(self, telnet_connection, errorConditionList=None):
         logger.debug("In closeout")
-        capturedFinalOutput, stepsSuccessful, errorConditionFound, errorMsg = self.processSteps(telnet_connection, self.exitCommandsList, self.serverSeparator)
+        capturedFinalOutput = ""
+        stepsSuccessful = True
+        errorConditionFound = False
+        concurrentLoginFound = False
+        errorMsg = "No error found"
+        capturedFinalOutput, stepsSuccessful, errorConditionFound, concurrentLoginFound, errorMsg = self.processSteps(telnet_connection, self.exitCommandsList, 
+            self.serverSeparator, errorConditionList, None)
+        logger.debug("Checking for errorConditionFound")
+        if errorConditionFound:
+            self.errorOut(telnet_connection, errorMsg, "NOT_LOGGED_IN")
         logger.debug("Result from running exit commands - capturedFinalOutput = %s, stepSuccessful = %s" % (capturedFinalOutput, stepsSuccessful))
         logger.debug("about to run read_all")
         output = ""
@@ -276,10 +272,37 @@ class TelnetConnection(object):
 
 ############# Utility Methods ##################
 
-    def processSteps(self, telnet_connection, strOfSteps, separator, errorConditionList=None):
+    def errorOut(self, telnet_connection, msg, currentState):
+        logger.debug("In errorOut with currentState %s, error message = %s " % (currentState, msg))
+        global errorStateList
+        if currentState not in errorStateList:
+            msg = "Plugin Error - attempt to process unkown error state - %, original error msg - " % (currentState, msg)
+        # determine state
+        # states 
+        # - no connection so just fail - NO_CONNECTION
+        # - Failed during login, just close out - NOT_LOGGED_IN
+        # - Failed because of concurrent login, must logout and close - CONCURRENT_LOGIN
+        # - Failed during command execution, must logout (if there is a username) and must close out - ERROR_AFTER_LOGIN
+        # - already logged out and closed out but fail 'must not be empty tests - FAILED_FINAL_TEST
+
+        if currentState == "NOT_LOGGED_IN":
+            self.closeout(telnet_connection)
+        elif currentState == "CONCURRENT_LOGIN":
+            self.logout(telnet_connection)
+            self.closeout(telnet_connection)
+        elif currentState == "ERROR_AFTER_LOGIN":
+            self.logout(telnet_connection)
+            self.closeout(telnet_connection)
+        # ALL STATES including NO_CONNECTION and FAILED_FINAL_TEST
+        print(msg)
+        sys.exit(1)
+        
+
+
+    def processSteps(self, telnet_connection, strOfSteps, separator, errorConditionList=None, concurrentLoginIndicator=None):
         logger.debug("In processSteps")
         errorConditionFound = False
-
+        concurrentLoginFound = False
         errorMsg = "No errors found"
         listOfCommands = []
         listOfLines = strOfSteps.splitlines()
@@ -304,11 +327,11 @@ class TelnetConnection(object):
             # encode the strings
             prompt = commandObj.prompt.encode('ascii')
             command = commandObj.command.encode('ascii')
-            #self.debugKeyValue(prompt, command, False)
+            # debugPromptCommand(prompt, command, False)
             # process the strings to correct XLR escaping behavior
             procPrompt, promptContainsPassword = self.processString(prompt)
             procCommand, commandContainsPassword = self.processString(command)
-            #self.debugKeyValue(procPrompt, procCommand, True, promptContainsPassword, commandContainsPassword)
+            #self.debugPromptCommand(procPrompt, procCommand, True, promptContainsPassword, commandContainsPassword)
             
             logger.debug("About to read_expect")
 
@@ -325,26 +348,29 @@ class TelnetConnection(object):
                 logger.debug("Output we were searching through -> displayed in HEX = %s" % binascii.hexlify(output))
             logger.debug("##### end - DEBUGING ATTEMPT TO MATCH #######")
 
-            if errorConditionList is not None:
-                logger.debug("##### begin checking output for error conditions")
-                errorConditionFound, errorMsg = self.checkForErrorCondition(output, errorConditionList)
-                logger.debug("##### end checking output for error conditions")
-
+            logger.debug("##### begin checking output for error conditions and/or concurrentLogin")
+            errorConditionFound, concurrentLoginFound, errorMsg = checkForErrorCondition(output, errorConditionList, concurrentLoginIndicator)
+            
             finalOutput = output
 
             if errorConditionFound:
-              return finalOutput, False, errorConditionFound, errorMsg  
+              return finalOutput, False, errorConditionFound, concurrentLoginFound, errorMsg
+
+            if concurrentLoginFound:
+              return finalOutput, False, errorConditionFound, concurrentLoginFound, errorMsg 
+
+            logger.debug("##### end checking output for error conditions and/or concurrentLogin") 
 
             if indexOfMatch == -1:
                 # We could not find requested text
                 if promptContainsPassword:
                     msg = ("Unable to find match for a prompt that contains a password. This debug message is incomplete to prevent revealing the password.")
                 else:
-                    msg = ("Unable to find match for key = %s, This was the actual output %s" % (procPrompt, finalOutput))
+                    msg = ("Unable to find match for prompt = %s, This was the actual output %s" % (procPrompt, finalOutput))
                 logger.debug(msg)
                 print(msg)
                 # Return False so calling code can bail out
-                return finalOutput, False, errorConditionFound, errorMsg
+                return finalOutput, False, errorConditionFound, concurrentLoginFound, errorMsg
             # Write command
             if commandContainsPassword:
                 logger.debug("About to write command that contains a password so we will not log.")
@@ -352,23 +378,8 @@ class TelnetConnection(object):
                 logger.debug("About to write command -> %s" % procCommand)
             telnet_connection.write(procCommand)
             logger.debug("\n*********************** END PROCESSING commandObj ******************************")
-        return finalOutput, True, errorConditionFound, errorMsg
+        return finalOutput, True, errorConditionFound, concurrentLoginFound, errorMsg
 
-    def checkForErrorCondition(self, theOutput, errorConditionList):
-        logger.debug("In checkForErrorCondition")
-        errorFound = False
-        msg = "No Error Found"
-        for condition in errorConditionList:
-            if len(condition.strip()) > 0:
-                logger.debug("Testing for Condition %s in output %s" % (condition, theOutput))
-                if not errorFound and len(condition) > 0 and condition in theOutput:
-                    # First error condition found
-                    msg = ("Found error condition '%s' in telnet output string '%s'" % (condition, theOutput))
-                    logger.debug(msg)
-                    print(msg)
-                    errorFound = True
-                    break
-        return errorFound, msg    
 
     def processString(self, theStr):
         # We don't want debuging to print out the password
@@ -388,18 +399,6 @@ class TelnetConnection(object):
             newstr = newstr.replace('[$password]', self.password.encode('ascii'))
             containsPassword = True
         return newstr, containsPassword
-
-    def debugKeyValue(self, prompt, command, hasBeenProcessed, promptContainsPassword = False, commandContainsPassword = False):
-        if hasBeenProcessed:
-            logger.debug("\n*** Processed ascii encoded Prompt and Command")
-        else:
-            logger.debug("\n*** Unprocessed ascii encoded Prompt and Command")
-        if promptContainsPassword:
-            prompt = "********"
-        if commandContainsPassword:
-            command = "********"
-        logger.debug("In debugKeyValue - prompt = %s, command = %s" % (prompt,command))
-        logger.debug("Converted to Hex - prompt = %s, command = %s" % (binascii.hexlify(prompt), binascii.hexlify(command)))
 
 
         

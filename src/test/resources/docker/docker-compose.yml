@@ -11,12 +11,12 @@
 xlr:
   image: xebialabs/xl-release:9.8.0
   volumes:
-  #  - ~/xl-licenses/xl-release-license.lic:/opt/xebialabs/xl-release-server/conf/xl-release-license.lic
+    - ~/xl-licenses/xl-release-license.lic:/opt/xebialabs/xl-release-server/conf/xl-release-license.lic
     - ./../../../../build/libs/:/opt/xebialabs/xl-release-server/default-plugins/__local__/
     - ./../../../../build/reports/tests/log/:/opt/xebialabs/xl-release-server/log/
   environment:
     - ADMIN_PASSWORD=admin
-    - ACCEPT_EULA=Y
+    # - ACCEPT_EULA=Y
   ports:
     - "15516:5516"
 

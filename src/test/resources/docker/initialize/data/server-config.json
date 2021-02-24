@@ -1,6 +1,6 @@
 
  {
-    "id": "Configuration/Custom/telnet",
+    "id": "Configuration/Custom/telnet1",
     "type":"telnet.Server",
     "title":"Telnet Server - wunderground",
     "telnetHost":"rainmaker.wunderground.com",
